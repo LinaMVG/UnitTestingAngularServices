@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams, HttpErrorResponse, HttpStatusCode } from '@angular/common/http';
 import { retry, catchError, map } from 'rxjs/operators';
 import { throwError, zip } from 'rxjs';
@@ -12,10 +12,9 @@ import { environment } from '../../environments/environments';
 export class ProductsService {
 
   private apiUrl = `${environment.API_URL}/api/v1`;
+  private http=inject(HttpClient)
 
-  constructor(
-    private http: HttpClient
-  ) { }
+  constructor(  ) { }
 
   getByCategory(categoryId: string, limit?: number, offset?: number){
     let params = new HttpParams();
