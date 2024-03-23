@@ -39,9 +39,9 @@ module.exports = function (config) {
       },
     },
     reporters: ["mocha"],
-    browsers: ["Chrome"],
+    browsers: ["ChromeHeadless"],
     customLaunchers: {
-      ChromeCI: {
+      ChromeHeadlessCI: {
         base: "ChromeHeadless",
         flags: ["--no-sandbox"],
       },
