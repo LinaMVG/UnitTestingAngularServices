@@ -4,20 +4,29 @@ import {HttpClientTestingModule, HttpTestingController} from '@angular/common/ht
 import { CreateProductDTO, Product, UpdateProductDTO } from "../models/product.model";
 import { generateManyProducts, generateOneProduct} from "../models/product.mock";
 import { environment } from "./../../environments/environments";
+import { HttpStatusCode, HTTP_INTERCEPTORS } from "@angular/common/http";
+import { TokenService } from "./token.service";
+import { TokenInterceptor } from "../interceptors/token.interceptor";
 
-fdescribe('Product service', ()=>{
+describe('Product service', ()=>{
   let productService: ProductsService;
   let httpController: HttpTestingController;
+  let tokenService: TokenService;
 
   beforeEach(()=>{
     TestBed.configureTestingModule({
       imports:[HttpClientTestingModule],
       providers:[
-        ProductsService
+        ProductsService,
+        TokenService,
+        {
+          provide: HTTP_INTERCEPTORS, useClass: TokenInterceptor, multi:true
+        }
       ]
     });
     productService = TestBed.inject(ProductsService);
     httpController = TestBed.inject(HttpTestingController);
+    tokenService = TestBed.inject(TokenService);
   })
 
   afterEach(()=>{
@@ -31,6 +40,7 @@ fdescribe('Product service', ()=>{
   describe('test for getAllSimple',()=>{
     it('shold be return a product list', (doneFn)=>{
       const mockData: Product[]= generateManyProducts(2);
+      spyOn(tokenService, 'getToken').and.returnValue('123');
       // [
       //   {
       //     id:'123',
@@ -54,6 +64,8 @@ fdescribe('Product service', ()=>{
       //http config
       const url = `${environment.API_URL}/api/v1/products`;
       const req =httpController.expectOne(url);
+      const headers = req.request.headers;
+      expect(headers.get('Authorization')).toEqual(`Bearer 123`)
       req.flush(mockData);
     })
   })
@@ -205,5 +217,50 @@ fdescribe('Product service', ()=>{
     });
   })
 
+
+  describe('test for getOne',()=>{
+
+    it('should return a product',(doneFn)=>{
+      const mockData :Product =generateOneProduct();
+      const productId='1';
+
+      productService.getOne(productId)
+      .subscribe(data =>{
+        expect(data).toEqual(mockData);
+        doneFn()
+      })
+
+      //http config
+      const url = `${environment.API_URL}/api/v1/products/${productId}`;
+      const req =httpController.expectOne(url);
+      expect(req.request.method).toEqual('GET');
+      req.flush(mockData);
+    });
+
+    it('should return a error 404',(doneFn)=>{
+      const productId='1';
+      const msgError = '404 message';
+      const mockError ={
+        status: HttpStatusCode.NotFound,
+        statusText: msgError
+      }
+
+      productService.getOne(productId)
+      .subscribe({
+        error: (error) =>{
+          expect(error).toEqual('El producto no existe')
+          doneFn()
+        }
+      })
+
+      //http config
+      const url = `${environment.API_URL}/api/v1/products/${productId}`;
+      const req =httpController.expectOne(url);
+      expect(req.request.method).toEqual('GET');
+      req.flush(msgError, mockError);
+    });
+
+
+  })
 
 })
