@@ -43,6 +43,12 @@ module.exports = function (config) {
     },
     reporters: ['mocha'],
     browsers: ['Chrome'],
+    customLauchers:{
+      ChromeCI:{
+        base: 'Chrome',
+        flags:['--no-sandbox']
+      }
+    },
     restartOnFileChange: true
   });
 };
