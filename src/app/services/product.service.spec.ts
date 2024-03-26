@@ -229,6 +229,7 @@ describe('Product service', ()=>{
         expect(data).toEqual(mockData);
         doneFn()
       })
+      
 
       //http config
       const url = `${environment.API_URL}/api/v1/products/${productId}`;
